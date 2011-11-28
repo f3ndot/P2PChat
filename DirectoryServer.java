@@ -12,7 +12,11 @@ public class DirectoryServer {
 	static DirectoryClientList directory = null;
 	static DatagramSocket serverSocket = null;
 
-	public DirectoryServer() throws IOException {
+	public DirectoryServer(GUIConsole gui) throws IOException {
+
+		System.setOut(gui.log);
+		System.setErr(gui.log);
+		
 		directory = new DirectoryClientList();
 		serverSocket = new DatagramSocket(DIRECTORY_PORT);
 		System.out.println("Directory server socket created, entering loop...");

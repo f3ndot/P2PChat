@@ -10,7 +10,14 @@ public class Driver {
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
 
-		DirectoryServer directoryServer = new DirectoryServer();
+        GUIConsole serverGUI = new GUIConsole();				
+        GUIConsole aliceGUI = new GUIConsole();
+        GUIConsole bobGUI = new GUIConsole();
+        GUIConsole charlieGUI = new GUIConsole();
+        
+        serverGUI.launchFrame();
+
+		DirectoryServer directoryServer = new DirectoryServer(serverGUI);
 
 		
 		/*DirectoryClientEntry bob = new DirectoryClientEntry("buser", "192.168.1.101", 44444, -1, "auser");
