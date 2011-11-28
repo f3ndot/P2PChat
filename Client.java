@@ -51,7 +51,8 @@ class Client {
 		System.out.println(" 3. /go-offline");
 		System.out.println(" 4. /leave-room");
 		System.out.println(" 5. /join-room <username>");
-		System.out.println(" 6. /quit\n");
+		System.out.println(" 6. /quit");
+		System.out.println(" 7. /test-rdt\n");
 
 		while(!(lastCommand.equals("/quit"))) {
 			System.out.print("["+consoleState+"] ");
@@ -120,6 +121,9 @@ class Client {
 			}
 		} else if(cmd.contains("/quit")) {
 			System.out.println("Quitting!");
+		} else if(cmd.contains("/test-rdt")) {
+			System.out.println("Sending a payload > 68 bytes to directory server...");
+			sendToDirectory("RDTCHECK", null, "AAAAAAAAAAAAAAAAAAABBBBBBBBBBCCCCCCC");
 		} else {
 			System.out.println("You need to join a room before chatting!");
 		}
