@@ -27,7 +27,7 @@ public class DirectoryServer {
 	}
 
 	public void handleIncomingData(byte[] data, InetAddress clientAddress, int clientPort) {
-		String strData = new String(data);
+		String strData = new String(data).trim();
 
 		// add it to an ArrayList for easy accessing, searching, etc.
 		ArrayList<String> request = new ArrayList<String>();

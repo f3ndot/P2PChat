@@ -8,7 +8,6 @@ public class Driver {
 	 * @throws UnknownHostException 
 	 */
 	public static void main(String[] args) throws Exception {
-		// TODO Auto-generated method stub
 
 		DirectoryServer directoryServer = new DirectoryServer();
 

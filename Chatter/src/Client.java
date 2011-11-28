@@ -1,7 +1,9 @@
-import java.io.*;
-import java.net.*;
-import java.lang.String;
-import java.lang.StringBuilder;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
 class Client {
 
@@ -179,7 +181,7 @@ class Client {
 			byte[] receiveData = new byte[1024];
 			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 			clientSocket.receive(receivePacket);
-			String response = new String(receivePacket.getData());
+			String response = new String(receivePacket.getData()).trim();
 			System.out.println("Raw Response: " + response);
 			clientSocket.close();
 			System.out.println("Finished!");
