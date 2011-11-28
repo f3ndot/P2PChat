@@ -5,6 +5,7 @@ import java.lang.StringBuilder;
 
 class Client {
 
+	public static final int MTU = 68; // 96 minus IPv4 and UDP overhead
 	public static final String DIRECTORY_ADDR = "localhost";
 	public static final int DIRECTORY_PORT = 55555;
 	public static final String PROTOCOL_VERSION = "BOKCHAT/1.0";
@@ -63,8 +64,8 @@ class Client {
 		/*while(true) {
 			DatagramSocket clientSocket = new DatagramSocket();
 			InetAddress IPAddress = InetAddress.getByName("localhost");
-			byte[] sendData = new byte[1024];
-			byte[] receiveData = new byte[1024];
+			byte[] sendData = new byte[MTU];
+			byte[] receiveData = new byte[MTU];
 
 			String strLine = new String();
 			StringBuilder strWhole = new StringBuilder();
@@ -130,7 +131,7 @@ class Client {
 			DatagramSocket clientSocket = new DatagramSocket();
 			InetAddress IPAddress = InetAddress.getByName(DIRECTORY_ADDR);
 
-			byte[] sendData = new byte[1024];
+			byte[] sendData = new byte[68];
 			String s = new String();
 
 			if(data == null) {
@@ -173,7 +174,7 @@ class Client {
 
 	public static void receiveFromDirectory(DatagramSocket clientSocket) {
 		try {
-			byte[] receiveData = new byte[1024];
+			byte[] receiveData = new byte[MTU];
 			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 			clientSocket.receive(receivePacket);
 			String response = new String(receivePacket.getData());

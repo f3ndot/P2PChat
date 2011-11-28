@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 public class DirectoryServer {
 
+	public static final int MTU = 68; // 96 minus IPv4 and UDP overhead
 	public static final String DIRECTORY_ADDR = "localhost";
 	public static final int DIRECTORY_PORT = 55555;
 	public static final String PROTOCOL_VERSION = "BOKCHAT/1.0";
@@ -18,7 +19,7 @@ public class DirectoryServer {
 		System.out.println("Directory server socket created, entering loop...");
 
 		while(true) {
-			byte[] receiveData = new byte[1024];
+			byte[] receiveData = new byte[MTU];
 			
 			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 			serverSocket.receive(receivePacket);
@@ -142,7 +143,7 @@ public class DirectoryServer {
 				break;
 			}
 			
-			byte[] sendData = new byte[1024];
+			byte[] sendData = new byte[MTU];
 
 			String s = new String();
 			if(directory == null) {
