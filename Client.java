@@ -5,8 +5,6 @@ import java.lang.StringBuilder;
 
 class Client {
 
-	//Alex is here.
-	
 	public static final String DIRECTORY_ADDR = "localhost";
 	public static final int DIRECTORY_PORT = 55555;
 	public static final String PROTOCOL_VERSION = "BOKCHAT/1.0";
