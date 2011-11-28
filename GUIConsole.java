@@ -18,7 +18,8 @@ public class GUIConsole {
 
 	public JTextArea taConsole = new JTextArea(30, 80);
 	private JButton btnClear = new JButton("Clear");
-
+	private JScrollPane spConsole = new JScrollPane(taConsole);
+	
 	private JMenuBar mb = new JMenuBar(); // Menubar
 	private JMenu mnuFile = new JMenu("File"); // File Entry on Menu bar
 	private JMenuItem mnuItemQuit = new JMenuItem("Quit"); // Quit sub item
@@ -35,7 +36,7 @@ public class GUIConsole {
 		mb.add(mnuFile);        // Add Menu items to form
 		mb.add(mnuHelp);
 
-		pnlConsole.add(taConsole);
+		pnlConsole.add(spConsole);
 		pnlButton.add(btnClear);
 
 		f.getContentPane().setLayout(new BorderLayout());
@@ -48,6 +49,7 @@ public class GUIConsole {
 
 		taConsole.setEditable(false);
 		taConsole.setWrapStyleWord(true);
+		taConsole.setFont(new Font("Courier New", Font.PLAIN, 14));
 		taConsole.setAutoscrolls(true);
 
 		consoleOut = new OutputStream() {
