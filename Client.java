@@ -6,6 +6,9 @@ import java.lang.StringBuilder;
 class Client {
 
 	public static final int MTU = 68; // 96 minus IPv4 and UDP overhead
+	public static final int TIMEOUT = 5000; // milliseconds
+	public static final int MAX_TRIES = 5; // until quit
+	
 	public static final String DIRECTORY_ADDR = "localhost";
 	public static final int DIRECTORY_PORT = 55555;
 	public static final String PROTOCOL_VERSION = "BOKCHAT/1.0";
@@ -17,7 +20,8 @@ class Client {
 	public static String host = new String();
 	public static String lastCommand = new String();
 	public static String consoleState = "console";
-
+	public static int timeoutTry = 0;
+	
 	public static void main(String args[]) throws Exception {
 
 		System.out.println("Chat client initiated! Prompting for client info...");
@@ -133,6 +137,12 @@ class Client {
 	public static void sendToDirectory(String method, String[] headers, String data) {
 		try {
 			DatagramSocket clientSocket = new DatagramSocket();
+
+			clientSocket.setSoTimeout(TIMEOUT);
+			
+			System.out.println("SBF: "+clientSocket.getSendBufferSize());
+			System.out.println("SoT: "+clientSocket.getSoTimeout());
+			
 			InetAddress IPAddress = InetAddress.getByName(DIRECTORY_ADDR);
 
 			byte[] sendData = new byte[68];
@@ -170,27 +180,35 @@ class Client {
 			
 			sendData = s.getBytes();
 			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, DIRECTORY_PORT);
-			clientSocket.send(sendPacket);
-			receiveFromDirectory(clientSocket);
+			rdtDispatch(clientSocket, sendPacket);
 		} catch (IOException e) {
 			e.printStackTrace();	
 		}
 
 	}
 
-
-	public static void receiveFromDirectory(DatagramSocket clientSocket) {
+	public static void rdtDispatch(DatagramSocket socket, DatagramPacket packet) {
 		try {
-			byte[] receiveData = new byte[MTU];
-			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-			clientSocket.receive(receivePacket);
-			String response = new String(receivePacket.getData());
-			System.out.println("Raw Response: " + response);
-			clientSocket.close();
-			System.out.println("Finished!");
+			socket.send(packet);
+			receiveFromDirectory(socket);
+		} catch(SocketTimeoutException e) {
+			System.out.println("Timeout waiting for directory! Trying again ("+timeoutTry+")");
+			timeoutTry++;
+			rdtDispatch(socket, packet);
 		} catch (IOException e) {
-			e.printStackTrace();	
-		}
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}		
+		timeoutTry = 0;
+	}
+
+	public static void receiveFromDirectory(DatagramSocket clientSocket) throws SocketTimeoutException, IOException {
+		byte[] receiveData = new byte[MTU];
+		DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+		clientSocket.receive(receivePacket);
+		String response = new String(receivePacket.getData());
+		System.out.println("Raw Response: " + response);
+		clientSocket.close();
 	}
 
 }
