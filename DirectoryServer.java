@@ -74,15 +74,9 @@ public class DirectoryServer {
 		//		System.out.println("---\n");
 
 		} else if(method.equals("QUERY")) {
-            try {
-				System.out.println("Dumping directory list for "+hostAndPort[0]+"...");
-				Thread.sleep(10000); // simulating network lag
-				directory.dumpList();
-				sendToClient(201, directory, clientAddress, clientPort); // OK Peerlist
-            } catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
+			System.out.println("Dumping directory list for "+hostAndPort[0]+"...");
+			directory.dumpList();
+			sendToClient(201, directory, clientAddress, clientPort); // OK Peerlist
 		} else if(method.equals("ONLINE")) {
 			System.out.println("Putting "+hostAndPort[0]+" online...");
 			boolean result = directory.addClient(new DirectoryClientEntry(requestData, hostAndPort[0], Integer.parseInt(hostAndPort[1]), -1, null));
