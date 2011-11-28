@@ -16,7 +16,9 @@ public class Driver {
         GUIConsole charlieGUI = new GUIConsole("Charlie Console");
         
         serverGUI.launchFrame();
+        aliceGUI.launchFrame();
 
+        Client alice = new Client(aliceGUI);
 		DirectoryServer directoryServer = new DirectoryServer(serverGUI);
 
 		

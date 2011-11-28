@@ -16,6 +16,7 @@ public class DirectoryServer {
 
 		System.setOut(gui.log);
 		System.setErr(gui.log);
+		System.setIn(gui.consoleIn);
 		
 		directory = new DirectoryClientList();
 		serverSocket = new DatagramSocket(DIRECTORY_PORT);

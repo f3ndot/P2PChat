@@ -17,8 +17,12 @@ class Client {
 	public static String lastCommand = new String();
 	public static String consoleState = "console";
 
-	public static void main(String args[]) throws Exception {
+	public Client(GUIConsole gui) throws Exception {
 
+		System.setOut(gui.log);
+		System.setErr(gui.log);
+		System.setIn(gui.consoleIn);
+		
 		System.out.println("Chat client initiated! Prompting for client info...");
 
 		BufferedReader inFromUser =
