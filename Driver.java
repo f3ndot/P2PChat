@@ -10,10 +10,10 @@ public class Driver {
 	public static void main(String[] args) throws Exception {
 		// TODO Auto-generated method stub
 
-        GUIConsole serverGUI = new GUIConsole();				
-        GUIConsole aliceGUI = new GUIConsole();
-        GUIConsole bobGUI = new GUIConsole();
-        GUIConsole charlieGUI = new GUIConsole();
+        GUIConsole serverGUI = new GUIConsole("Server Console");				
+        GUIConsole aliceGUI = new GUIConsole("Alice Console");
+        GUIConsole bobGUI = new GUIConsole("Bob Console");
+        GUIConsole charlieGUI = new GUIConsole("Charlie Console");
         
         serverGUI.launchFrame();
 

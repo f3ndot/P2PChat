@@ -12,7 +12,7 @@ public class GUIConsole {
 	private OutputStream consoleOut;
 	public PrintStream log;
 
-	private JFrame f = new JFrame("Console GUI");
+	private JFrame f = new JFrame();
 	private JPanel pnlConsole = new JPanel();
 	private JPanel pnlButton = new JPanel();
 
@@ -25,8 +25,9 @@ public class GUIConsole {
 	private JMenu mnuHelp = new JMenu("Help"); // Help Menu entry
 	private JMenuItem mnuItemAbout = new JMenuItem("About"); // About Entry
 
-	public GUIConsole() {
+	public GUIConsole(String title) {
 
+		f.setTitle(title);
 		f.setJMenuBar(mb);
 
 		mnuFile.add(mnuItemQuit);  // Create Quit line
