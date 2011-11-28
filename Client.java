@@ -7,7 +7,7 @@ class Client {
 
 	public static final int MTU = 68; // 96 minus IPv4 and UDP overhead
 	public static final int TIMEOUT = 5000; // milliseconds
-	public static final int MAX_TRIES = 5; // until quit
+	public static final int MAX_TRIES = 3; // until quit
 	
 	public static final String DIRECTORY_ADDR = "localhost";
 	public static final int DIRECTORY_PORT = 55555;
@@ -188,18 +188,21 @@ class Client {
 	}
 
 	public static void rdtDispatch(DatagramSocket socket, DatagramPacket packet) {
-		try {
-			socket.send(packet);
-			receiveFromDirectory(socket);
-		} catch(SocketTimeoutException e) {
-			System.out.println("Timeout waiting for directory! Trying again ("+timeoutTry+")");
-			timeoutTry++;
-			rdtDispatch(socket, packet);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}		
-		timeoutTry = 0;
+		if(timeoutTry < MAX_TRIES) {
+			try {
+				socket.send(packet);
+				receiveFromDirectory(socket);
+			} catch(SocketTimeoutException e) {
+				System.out.println("Timeout waiting for directory! Trying again ("+timeoutTry+")");
+				timeoutTry++;
+				rdtDispatch(socket, packet);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}		
+			timeoutTry = 0;
+		} else {
+			System.err.println("Maximum number of tries reached. Reverting back to console...");
+		}
 	}
 
 	public static void receiveFromDirectory(DatagramSocket clientSocket) throws SocketTimeoutException, IOException {
