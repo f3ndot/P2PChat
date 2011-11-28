@@ -1,3 +1,8 @@
-You're a damn fool if you're thinking of running, modifying, or reading this repo.
+UPD-RDT Branch contains the progress in implementing proper Reliable Data Transfer for the communication between P2PClient and Directory Server (UDP protocol).
 
-Cheers!
+Specs:
+- Should have a MTU of 96 (Unsure what this means... Research to follow)
+- Should retransmit if timeout is reached
+- ACK needs to be implemented
+
+Fuck.
