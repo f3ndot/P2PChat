@@ -56,22 +56,6 @@ public class DirectoryServer {
 
 		if(!version.equals(PROTOCOL_VERSION)) {
 			sendToClient(500, null, clientAddress, clientPort); // Version mismatch / Not Implemented
-		
-		//		System.out.println("---");
-		//		
-		//		System.out.println("Method:\t\t" + method);
-		//		System.out.println("From:\t\t" + hostAndPort);
-		//		System.out.println("Version:\t" + version);
-		//		
-		//		for (String[] strings : headers) {
-		//			System.out.println("Header:\t\t"+strings[0]+"="+strings[1]);
-		//		}
-		//		
-		//		if(!requestData.isEmpty()) {
-		//			System.out.println("Data:\t\t"+requestData);
-		//		}
-		//		
-		//		System.out.println("---\n");
 
 		} else if(method.equals("QUERY")) {
 			System.out.println("Dumping directory list for "+hostAndPort[0]+"...");
