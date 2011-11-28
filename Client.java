@@ -94,7 +94,7 @@ class Client {
 			sendToDirectory("QUERY", null, null);
 		} else if(cmd.contains("/go-online")) {
 			System.out.println("Informing directory server...");
-			String data[] = {"5", "bob"};
+			String data[] = {"5", "bob"}; //TODO this should be nulls if needed and directory needs to handle it
 			sendToDirectory("ONLINE", data, username);
 		} else if(cmd.contains("/go-offline")) {
 			System.out.println("Informing directory server...");
@@ -160,6 +160,9 @@ class Client {
 						data;
 			}
 
+			// annoyingly verbose
+			//System.out.println("Sending Request: "+s);
+			
 			sendData = s.getBytes();
 			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, DIRECTORY_PORT);
 			clientSocket.send(sendPacket);

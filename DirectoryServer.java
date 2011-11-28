@@ -79,7 +79,7 @@ public class DirectoryServer {
 			sendToClient(201, directory, clientAddress, clientPort); // OK Peerlist
 		} else if(method.equals("ONLINE")) {
 			System.out.println("Putting "+hostAndPort[0]+" online...");
-			boolean result = directory.addClient(new DirectoryClientEntry(requestData, hostAndPort[0], Integer.parseInt(hostAndPort[1]), -1, null));
+			boolean result = directory.addClient(new DirectoryClientEntry(requestData.trim(), hostAndPort[0], Integer.parseInt(hostAndPort[1]), -1, null));
 			if(!result) {
 				System.err.println("USER ALREADY ONLINE / A USER HAS THE SAME CREDENTIALS");
 				sendToClient(401, null, clientAddress, clientPort);
@@ -138,13 +138,22 @@ public class DirectoryServer {
 			
 			byte[] sendData = new byte[1024];
 
+			StringBuilder sb = new StringBuilder();
 			String s = new String();
 			if(directory == null) {
-				s = PROTOCOL_VERSION + " " + statusCode + " " + statusPhrase;
+				s = PROTOCOL_VERSION + " " + statusCode + " " + statusPhrase + CRLF;
 			} else {
-				s = PROTOCOL_VERSION + " " + statusCode + " " + statusPhrase;
+				sb.append(PROTOCOL_VERSION + " " + statusCode + " " + statusPhrase + CRLF);
+				
+				for ( DirectoryClientEntry client : directory.clientList) {
+					sb.append("Client: username="+client.username+" host="+client.hostIP.toString()+" port="+client.protocolPort+" rating="+client.rating+" room="+client.usernameChatroom+ CRLF);
+				}
+				
+				s = sb.toString();
 			}
 
+			System.out.println("Sending Response: "+s);
+			
 			sendData = s.getBytes();
 			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, clientAddress, clientPort);
 			serverSocket.send(sendPacket);
