@@ -51,7 +51,7 @@ class Client {
 		System.out.println("Client Port: "+port);
 
 		ipaddr = InetAddress.getByName("127.0.0.1");
-		host = ipaddr.getCanonicalHostName();
+		host = ipaddr.getHostAddress();
 		System.out.println("Client IP: "+ipaddr.getHostAddress()+"\n");
 
 		System.out.println("--- COMMAND MENU ---");
@@ -152,10 +152,7 @@ class Client {
 			DatagramSocket clientSocket = new DatagramSocket();
 
 			clientSocket.setSoTimeout(TIMEOUT);
-			
-			System.out.println("SBF: "+clientSocket.getSendBufferSize());
-			System.out.println("SoT: "+clientSocket.getSoTimeout());
-			
+						
 			rdtDispatch(s, clientSocket);
 			clientSocket.close();
 		} catch (IOException e) {
@@ -180,6 +177,8 @@ class Client {
 		
 		String outString = Integer.toString(sequenceNumber) + s;
 		
+		System.out.println("Sending Raw Request: "+outString);
+		
 		sendData = outString.getBytes();//Append SeqNum		
 		DatagramPacket packet = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(DIRECTORY_ADDR), DIRECTORY_PORT);
 
@@ -193,11 +192,11 @@ class Client {
 				socket.send(packet);
 				if(!(incomingData = receiveFromDirectory(socket)).isEmpty()) {
 					directorySeqNum = extractSequenceNumber(incomingData);
-					if(incomingData.contains(directorySeqNum+"ACK")) {
-						System.out.println("ITS AN ACK");
+					if(isACK(incomingData)) {
+						System.out.println("ITS AN ACK.. ACKING SeqNum: "+getAckedSequenceNumber(incomingData));
 					} else {
 						System.out.println("NOT AN ACK");
-						String ack = directorySeqNum+"ACK";
+						String ack = sequenceNumber+"ACK"+directorySeqNum;
 						rdtDispatch(ack, socket);
 					}
 				}
@@ -216,8 +215,15 @@ class Client {
 	}
 
 	public static int extractSequenceNumber(String data) {
-		System.out.println(data.substring(0,4));
 		return Integer.parseInt(data.substring(0,4));
+	}
+
+	public static boolean isACK(String data) {
+		return data.substring(4,7).equals("ACK");
+	}
+	
+	public static int getAckedSequenceNumber(String data) {
+		return Integer.parseInt(data.substring(7,11));		
 	}
 	
 }

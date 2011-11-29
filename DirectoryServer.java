@@ -19,6 +19,10 @@ public class DirectoryServer {
 	static DirectoryClientList directory = null;
 	static DatagramSocket serverSocket = null;
 
+	// really dirty, I know
+	static int clientPort = -1;
+	static InetAddress clientHost = null;
+	
 	public DirectoryServer() throws IOException {
 		sequenceNumber = new Random().nextInt(8999) + 1000;
 		directory = new DirectoryClientList();
@@ -28,12 +32,12 @@ public class DirectoryServer {
 
 		while(true) {
 			String s = receiveFromClient(serverSocket);
-			handleIncomingData(s); // TODO extract seqnum ACK check similar to Client
+			rdtReceive(s, serverSocket);
 		}
 	}
 
-	public void handleIncomingData(String s) throws UnknownHostException {
-
+	public static void handleIncomingData(String s, int clientSeqNum) throws UnknownHostException {
+				
 		// add it to an ArrayList for easy accessing, searching, etc.
 		ArrayList<String> request = new ArrayList<String>();
 		for(String line : s.split(CRLF)) {
@@ -58,52 +62,51 @@ public class DirectoryServer {
 		String[] hostAndPort = requestLineMembers[1].split(":"); 
 		String version = requestLineMembers[2].trim();
 		
-		InetAddress host = InetAddress.getByName(hostAndPort[0]);
-		int port = Integer.parseInt(hostAndPort[1]);
+		InetAddress host = clientHost;
+		int port = clientPort;
 
 		// TODO Add ACK sequence check here?
 		if(!version.equals(PROTOCOL_VERSION)) {
-			sendToClient(500, null, host, port); // Version mismatch / Not Implemented
+			sendToClient(500, null, host, port, clientSeqNum); // Version mismatch / Not Implemented
 		} else if(method.equals("QUERY")) {
 			System.out.println("Dumping directory list for "+hostAndPort[0]+"...");
 			directory.dumpList();
-			sendToClient(201, directory, host, port); // OK Peerlist
+			sendToClient(201, directory, host, port, clientSeqNum); // OK Peerlist
 		} else if(method.equals("ONLINE")) {
 			System.out.println("Putting "+hostAndPort[0]+" online...");
 			boolean result = directory.addClient(new DirectoryClientEntry(requestData.trim(), hostAndPort[0], Integer.parseInt(hostAndPort[1]), -1, null));
 			if(!result) {
 				System.err.println("USER ALREADY ONLINE / A USER HAS THE SAME CREDENTIALS");
-				sendToClient(401, null, host, port);
+				sendToClient(401, null, host, port, clientSeqNum);
 			} else {
-				sendToClient(200, null, host, port); // OK
+				sendToClient(200, null, host, port, clientSeqNum); // OK
 			}
 		} else if(method.equals("OFFLINE")) {
 			System.out.println("Putting "+hostAndPort[0]+" offline...");
 			boolean result = directory.removeClientByHost(hostAndPort[0]);
 			if(!result) {
 				System.err.println("USER ALREADY OFFLINE");
-				sendToClient(402, null, host, port);
+				sendToClient(402, null, host, port, clientSeqNum);
 			} else {
-				sendToClient(200, null, host, port); // OK
+				sendToClient(200, null, host, port, clientSeqNum); // OK
 			}
 		} else if(method.equals("JOINED")) {
 			System.err.println("TODO :-)");
-			sendToClient(500, null, host, port); 
+			sendToClient(500, null, host, port, clientSeqNum); 
 		} else if(method.equals("PARTED")) {
 			System.err.println("TODO :-)");
-			sendToClient(500, null, host, port); 
+			sendToClient(500, null, host, port, clientSeqNum); 
 		} else {
 			System.err.println("UNKNOWN REQUEST");
-			sendToClient(400, null, host, port); 
+			sendToClient(400, null, host, port, clientSeqNum); 
 		}
 
 		System.out.println("---\n");
 
 	}
 
-	public static void sendToClient(int statusCode, DirectoryClientList directory, InetAddress clientAddress, int clientPort) {
+	public static void sendToClient(int statusCode, DirectoryClientList directory, InetAddress clientAddress, int clientPort, int clientSeqNum) {
 		try {
-			InetAddress IPAddress = InetAddress.getByName(DIRECTORY_ADDR);
 
 			String statusPhrase = new String();
 			switch(statusCode) {
@@ -143,11 +146,8 @@ public class DirectoryServer {
 				s = sb.toString();
 			}
 
-			System.out.println("Sending Response: "+s);
-			
-			sendData = s.getBytes();
-			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, clientAddress, clientPort);
-			rdtDispatch(serverSocket, sendPacket);
+			rdtDispatch(s, serverSocket, clientSeqNum);
+			// close socket?
 		} catch (IOException e) {
 			e.printStackTrace();	
 		}
@@ -160,40 +160,83 @@ public class DirectoryServer {
 		String request = new String(receivePacket.getData()).trim();
 		System.out.println("Raw Request: " + request);
 		//serverSocket.close();
-		//TODO send ACK here (or RDT)
+		//TODO send ACK here (or RDT) <<< OR DO IT IN HANDLER's sendToClient() >>
+		
+		clientPort = receivePacket.getPort();
+		clientHost = receivePacket.getAddress();
+				
 		return request;
 	}
+
+	public static void rdtReceive(String s, DatagramSocket socket) throws UnknownHostException {
+		int clientSeqNum = extractSequenceNumber(s);
+		
+		if(isACK(s)) {
+			System.out.println("ITS AN ACK.. ACKING SeqNum: "+getAckedSequenceNumber(s));
+			s = s.substring(7);
+		} else {
+			s = s.substring(4);
+			handleIncomingData(s, clientSeqNum);
+		}
+	}
 	
-	public static void rdtDispatch(DatagramSocket socket, DatagramPacket packet) {
-		int clientSeqNum = -1;
+	public static void rdtDispatch(String s, DatagramSocket socket, int clientSeqNum) throws IOException {
+		
+		byte[] sendData = new byte[MTU];
+		
+		String outString = Integer.toString(sequenceNumber) + "ACK" + Integer.toString(clientSeqNum) + s;
+
+		System.out.println("Sending Raw Response: "+outString);
+		
+		sendData = outString.getBytes();//Append SeqNum		
+		DatagramPacket packet = new DatagramPacket(sendData, sendData.length, clientHost, clientPort);
+		socket.send(packet);
+		sequenceNumber++;
+
+		
+		// NOTE TODO 4 chars = seqnum
+
+		
+		/*int directorySeqNum = -1;
 		String incomingData = new String();
 		if(timeoutTry < MAX_TRIES) {
 			try {
 				socket.send(packet);
 				if(!(incomingData = receiveFromClient(socket)).isEmpty()) {
-					clientSeqNum = extractSequenceNumber(incomingData);
-					DatagramPacket ackPacket = packet;
-					String s = "ACK"+clientSeqNum;
-					ackPacket.setData(s.getBytes(), 0, s.length());
-					rdtDispatch(socket, ackPacket);
+					directorySeqNum = extractSequenceNumber(incomingData);
+					if(isACK(incomingData)) {
+						System.out.println("ITS AN ACK");
+					} else {
+						System.out.println("NOT AN ACK");
+						String ack = directorySeqNum+"ACK";
+						rdtDispatch(ack, socket);
+					}
 				}
 			} catch(SocketTimeoutException e) {
 				System.out.println("Timeout waiting for client! Trying again ("+timeoutTry+")");
 				timeoutTry++;
-				rdtDispatch(socket, packet);
+				rdtDispatch(s, socket);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}		
 			timeoutTry = 0;
 			sequenceNumber++;
 		} else {
-			System.err.println("Maximum number of tries reached. Reverting back to console...");
-		}
+			System.err.println("Maximum number of tries reached. Stopping communication with client...");
+		}*/
 	}
 
 	public static int extractSequenceNumber(String data) {
-		System.out.println(data.substring(0,4));
 		return Integer.parseInt(data.substring(0,4));
 	}
+	
+	public static boolean isACK(String data) {
+		return data.substring(4,7).equals("ACK");
+	}
+	
+	public static int getAckedSequenceNumber(String data) {
+		return Integer.parseInt(data.substring(7,11));		
+	}
+
 	
 }
