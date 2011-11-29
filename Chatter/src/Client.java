@@ -26,6 +26,7 @@ class Client {
 		BufferedReader inFromUser =
 				new BufferedReader(new InputStreamReader(System.in));
 
+		//FIXME: Harcoded username. Balls.
 		username = "Alice";
 		System.out.println("Username: "+username);
 
@@ -48,7 +49,6 @@ class Client {
 			System.out.print("["+consoleState+"] ");
 			lastCommand = inFromUser.readLine();
 			commandHandler(lastCommand);
-			//System.out.println("Got command "+lastCommand);
 		}
 	}
 
@@ -65,15 +65,15 @@ class Client {
 		} else if(cmd.contains("/go-offline")) {
 			System.out.println("Informing directory server...");
 			sendToDirectory("OFFLINE", null, null);
-		} else if(cmd.contains("/leave-room")) {;
-		if(consoleState.equals("console")) {
-			System.out.println("You're not in a room!");
-		} else {
-			System.out.println("Leaving chat room \""+cmd.substring(12)+"\"...");
-			//TODO initiate P2P connection (if true set console state and room state)
-			System.out.println("Informing directory server...");
-			sendToDirectory("PARTED", null, cmd.substring(12));
-		}
+		} else if(cmd.contains("/leave-room")) {
+			if(consoleState.equals("console")) {
+				System.out.println("You're not in a room!");
+			} else {
+				System.out.println("Leaving chat room \""+cmd.substring(12)+"\"...");
+				//TODO initiate P2P connection (if true set console state and room state)
+				System.out.println("Informing directory server...");
+				sendToDirectory("PARTED", null, cmd.substring(12));
+			}
 		} else if(cmd.contains("/join-room")) {
 			if(cmd.length() < 11) {
 				System.out.println("Please specify a chat room to join");
