@@ -14,9 +14,15 @@ public class RDTReceiverDriver {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 
+		System.out.println("Starting up Server...");
+		
 		String s = "BOKCHAT/1.0 200 OK";
 
 		RDTReceiver receiveFromClient = new RDTReceiver(DIRECTORY_PORT);
+	
+		while(true) {
+			System.out.println(receiveFromClient.receiveRequest().getPayload());
+		}
 		
 	}
 

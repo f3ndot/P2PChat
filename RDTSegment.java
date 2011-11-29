@@ -35,4 +35,12 @@ public class RDTSegment {
 		}
 	}
 	
+	public String getPayload() {
+		StringBuilder payload = new StringBuilder();
+		for (RDTPacket packet : packets) {
+			payload.append(packet.payload);
+		}
+		return payload.toString();
+	}
+	
 }

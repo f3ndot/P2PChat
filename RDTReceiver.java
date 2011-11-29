@@ -1,6 +1,7 @@
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.Random;
 
@@ -20,10 +21,17 @@ public class RDTReceiver {
 	}
 
 	public RDTSegment receiveRequest() {
-		
-		
-		
 		RDTSegment request = new RDTSegment("", 0);
+		
+		boolean done = false;
+		while(!done) {
+			RDTPacket packet = receivePacket();
+			request.packets.add(packet);
+			sendAck(packet.sequenceNumber, packet.senderHost, packet.senderPort);
+			if(packet.conFlag.equals("0")) {
+				done = true;
+			}
+		}
 		return request;
 	}
 	
@@ -36,7 +44,22 @@ public class RDTReceiver {
 			e.printStackTrace();
 		}
 		RawDatagramExtractor pktInfo = new RawDatagramExtractor(request);
-		return new RDTPacket(pktInfo.extractAckFlag(), pktInfo.extractConFlag(), pktInfo.extractSequenceNumber(), pktInfo.extractAckedSeqNum(), pktInfo.extractPayload());
+		RDTPacket packet = new RDTPacket(pktInfo.extractAckFlag(), pktInfo.extractConFlag(), pktInfo.extractSequenceNumber(), pktInfo.extractAckedSeqNum(), pktInfo.extractPayload());
+		packet.senderHost = request.getAddress();
+		packet.senderPort = request.getPort();
+		return packet;
+	}
+	
+	private void sendAck(String ackedSeqNum, InetAddress destHost, int destPort) {
+		RDTPacket ackPacket = new RDTPacket(ackedSeqNum, sequenceNumber);
+		sequenceNumber++;
+		DatagramPacket p = new DatagramPacket(ackPacket.toString().getBytes(), ackPacket.toString().getBytes().length, destHost, destPort);
+		try {
+			socket.send(p);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 	
 	private void openSocket() {

@@ -1,3 +1,5 @@
+import java.net.InetAddress;
+
 
 public class RDTPacket {
 
@@ -27,6 +29,9 @@ public class RDTPacket {
 	public String ackFlag = new String();
 	public String conFlag = new String();
 
+	public InetAddress senderHost;
+	public int senderPort;
+	
 	public RDTPacket(String payload, int sequenceNumber, String conFlag) {
 		this.payload = payload;
 		this.sequenceNumber = Integer.toString(sequenceNumber);

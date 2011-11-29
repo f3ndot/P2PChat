@@ -33,7 +33,9 @@ public class RDTSender {
 				DatagramPacket request = new DatagramPacket(packet.toString().getBytes(), packet.toString().getBytes().length, InetAddress.getByName(destHostname), destPort);				
 				socket.send(request);
 				RDTPacket response = receiveResponse();
-				System.out.println(response.toString());
+				if(response.ackFlag.equals("1")) {
+					System.out.println("DEBUG: Received ACK for packet "+response.ackedSeqNum);
+				}
 			} catch (UnknownHostException e) {
 				e.printStackTrace();
 			} catch (IOException e) {
