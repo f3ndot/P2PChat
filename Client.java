@@ -20,7 +20,7 @@ class Client {
 	public static String consoleState = "console";
 	private static BufferedReader inFromUser;
 	private static P2PServer p2pServer;
-
+	
 	public static void main(String args[]) throws Exception {
 		System.out.println("Chat client initiated! Prompting for client info...");
 
@@ -51,7 +51,7 @@ class Client {
 		System.out.println(" 1. /query-for-peers");
 		System.out.println(" 2. /go-online");
 		System.out.println(" 3. /go-offline");
-		System.out.println(" 4. /leave-room");
+		System.out.println(" 4. /exit (only works in chatroom)");
 		System.out.println(" 5. /join-room <username>");
 		System.out.println(" 6. /quit");
 		System.out.println(" 7. /test-rdt\n");
@@ -71,30 +71,24 @@ class Client {
 			sendToDirectory("QUERY", null, null);
 		} else if(cmd.contains("/go-online")) {
 			System.out.println("Informing directory server...");
-			String data[] = {"5", "bob"}; //TODO this should be nulls if needed and directory needs to handle it
+			String data[] = {"", ""};
 			sendToDirectory("ONLINE", data, username);
 			runChatServer();
 		} else if(cmd.contains("/go-offline")) {
 			System.out.println("Informing directory server...");
 			sendToDirectory("OFFLINE", null, null);
 			endChatServer();
-		} else if(cmd.contains("/leave-room")) {
-			if(consoleState.equals("console")) {
-				System.out.println("You're not in a room!");
-			} else {
-				System.out.println("Leaving chat room \""+cmd.substring(12)+"\"...");
-				System.out.println("Informing directory server...");
-				sendToDirectory("PARTED", null, cmd.substring(12));
-			}
 		} else if(cmd.contains("/join-room")) {
 			if(cmd.length() < 11) {
 				System.out.println("Please specify a chat room to join");
 			} else {
 				System.out.println("Joining chat room \""+cmd.substring(11)+"\"...");
 				//FIXME get these two values from Directory
-				joinChatServer("localhost", port);
 				System.out.println("Informing directory server...");
-				sendToDirectory("JOINED", null, cmd.substring(11));
+				String data[] = {"", cmd.substring(11)};
+				sendToDirectory("JOINED", data, cmd.substring(11));
+				consoleState = cmd.substring(11);
+				joinChatServer("localhost", port);
 			}
 		} else if(cmd.contains("/quit")) {
 			System.out.println("Quitting!");
@@ -175,6 +169,7 @@ class Client {
 		while (true) {
 			String line = inFromUser.readLine();
 			if (line.equals("/exit")) {
+				sendToDirectory("PARTED", null, consoleState); //FIXME
 				break;
 			}
 			socketWriter.println(username +": "+ line);

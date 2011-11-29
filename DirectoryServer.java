@@ -79,11 +79,13 @@ public class DirectoryServer {
 				sendToClient(200, null, host, port); // OK
 			}
 		} else if(method.equals("JOINED")) {
-			System.err.println("TODO :-)");
-			sendToClient(500, null, host, port); 
+			directory.getClientByHost(hostAndPort[0]).usernameChatroom = requestData;
+			sendToClient(200, null, host, port); 
+			directory.dumpList();
 		} else if(method.equals("PARTED")) {
-			System.err.println("TODO :-)");
-			sendToClient(500, null, host, port); 
+			directory.getClientByHost(hostAndPort[0]).usernameChatroom = "";
+			sendToClient(200, null, host, port); 
+			directory.dumpList();
 		} else {
 			System.err.println("UNKNOWN REQUEST");
 			sendToClient(400, null, host, port); 

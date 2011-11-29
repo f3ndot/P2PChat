@@ -25,6 +25,15 @@ public class DirectoryClientList {
 		}
 	}
 
+	public DirectoryClientEntry getClientByHost(String hostaddr) {
+		for (DirectoryClientEntry client : clientList) {
+			if(client.hostname.equals(hostaddr)) {
+				return client;
+			}
+		}
+		return null;
+	}
+	
 	public boolean removeClient(DirectoryClientEntry client) {
 		boolean result = clientList.remove(client);
 		return result;
