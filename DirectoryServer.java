@@ -39,6 +39,8 @@ public class DirectoryServer {
 
 	public static void handleIncomingData(String s, InetAddress host, int port) {
 
+		System.out.println("DEBUG: Received request from "+host.getHostAddress()+":"+port+", "+s);
+		
 		// add it to an ArrayList for easy accessing, searching, etc.
 		ArrayList<String> request = new ArrayList<String>();
 		for(String line : s.split(CRLF)) {
@@ -143,7 +145,7 @@ public class DirectoryServer {
 			s = sb.toString();
 		}
 
-		System.out.println("Would send response: "+s);
+		System.out.println("DEBUG: Would send response: "+s);
 		
 		//rdtDispatch(s, serverSocket, clientSeqNum);
 		// close socket?
