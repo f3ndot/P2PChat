@@ -43,8 +43,8 @@ public class DirectoryServer {
 			if(string.matches(".*: .*")) {
 				String[] headerPair = string.split(": ");
 				headers.add(headerPair);
-			} else if(!string.contains(PROTOCOL_VERSION) || !string.contains("ACK")) { // TODO BAD CODE! Should check if i > 0...
-				requestData = requestData.concat(string);
+			} else if(!string.matches(".*BOKCHAT/1\\.0.*") && string.matches("[a-zA-Z]+") ) { // bad justin TODO
+				requestData = string.trim();
 			}
 		}
 
@@ -60,8 +60,8 @@ public class DirectoryServer {
 			directory.dumpList();
 			sendToClient(201, directory, host, port); // OK Peerlist
 		} else if(method.equals("ONLINE")) {
-			System.out.println("Putting "+hostAndPort[0]+" online...");
-			boolean result = directory.addClient(new DirectoryClientEntry(requestData.trim(), hostAndPort[0], Integer.parseInt(hostAndPort[1]), -1, null));
+			System.out.println("Putting "+hostAndPort[0]+":"+hostAndPort[1]+" online...");
+			boolean result = directory.addClient(new DirectoryClientEntry(requestData, hostAndPort[0], Integer.parseInt(hostAndPort[1]), -1, ""));
 			if(!result) {
 				System.err.println("USER ALREADY ONLINE / A USER HAS THE SAME CREDENTIALS");
 				sendToClient(401, null, host, port);
@@ -70,7 +70,7 @@ public class DirectoryServer {
 			}
 		} else if(method.equals("OFFLINE")) {
 			System.out.println("Putting "+hostAndPort[0]+" offline...");
-			boolean result = directory.removeClientByHost(hostAndPort[0]);
+			boolean result = directory.removeClientByHost(requestData);
 			if(!result) {
 				System.err.println("USER ALREADY OFFLINE");
 				sendToClient(402, null, host, port);
