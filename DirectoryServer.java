@@ -28,7 +28,7 @@ public class DirectoryServer {
 
 		while(true) {
 			String s = receiveFromClient(serverSocket);
-			handleIncomingData(s);
+			handleIncomingData(s); // TODO extract seqnum ACK check similar to Client
 		}
 	}
 

@@ -69,32 +69,6 @@ class Client {
 			commandHandler(lastCommand);
 			//System.out.println("Got command "+lastCommand);
 		}
-
-
-		/*while(true) {
-			DatagramSocket clientSocket = new DatagramSocket();
-			InetAddress IPAddress = InetAddress.getByName("localhost");
-			byte[] sendData = new byte[MTU];
-			byte[] receiveData = new byte[MTU];
-
-			String strLine = new String();
-			StringBuilder strWhole = new StringBuilder();
-
-			while(!(strLine = inFromUser.readLine()).trim().equals("")) {
-				strWhole.append(strLine+"\n");
-				//System.out.println("Line: " + strLine);
-			}
-			//System.out.println("Whole: " + strWhole.toString());      
-
-			sendData = strWhole.toString().getBytes();
-			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, 55555);
-			clientSocket.send(sendPacket);
-			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-			clientSocket.receive(receivePacket);
-			String modifiedSentence = new String(receivePacket.getData());
-			System.out.println("FROM SERVER:" + modifiedSentence);
-			clientSocket.close();
-		}*/
 	}
 
 
