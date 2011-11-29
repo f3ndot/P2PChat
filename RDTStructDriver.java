@@ -18,6 +18,8 @@ public class RDTStructDriver {
 
 		RDTSender sendToDirectory = new RDTSender(s, DIRECTORY_ADDR, DIRECTORY_PORT);
 		
+		sendToDirectory.sendMessage();
+		
 	}
 
 }
