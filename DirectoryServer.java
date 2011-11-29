@@ -70,7 +70,7 @@ public class DirectoryServer {
 			}
 		} else if(method.equals("OFFLINE")) {
 			System.out.println("Putting "+hostAndPort[0]+" offline...");
-			boolean result = directory.removeClientByHost(requestData);
+			boolean result = directory.removeClientByHost(hostAndPort[0]);
 			if(!result) {
 				System.err.println("USER ALREADY OFFLINE");
 				sendToClient(402, null, host, port);

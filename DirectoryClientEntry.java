@@ -21,7 +21,7 @@ public class DirectoryClientEntry {
 		}
 		
 		this.username = username;
-		this.hostname = hostIP.getCanonicalHostName();
+		this.hostname = hostIP.getHostAddress();
 		this.hostIP = hostIP;
 		this.protocolPort = protocolPort;
 		this.rating = rating;
