@@ -22,7 +22,7 @@ class Client {
 	private static BufferedReader inFromUser;
 	private static P2PServer p2pServer;
 	
-	public static ArrayList<String> rooms = new ArrayList<String>();
+	public static ArrayList<String[]> rooms = new ArrayList<String[]>();
 	
 	public static void main(String args[]) throws Exception {
 		System.out.println("Chat client initiated! Prompting for client info...");
@@ -85,13 +85,20 @@ class Client {
 			if(cmd.length() < 11) {
 				System.out.println("Please specify a chat room to join");
 			} else {
-				System.out.println("Joining chat room \""+cmd.substring(11)+"\"...");
-				//FIXME get these two values from Directory
-				System.out.println("Informing directory server...");
-				String data[] = {"", cmd.substring(11)};
-				sendToDirectory("JOINED", data, cmd.substring(11));
-				consoleState = cmd.substring(11);
-				joinChatServer("localhost", port);
+				
+				for (String[] roomListing : rooms) {
+					if(roomListing[0].equals(cmd.substring(11))) {
+						System.out.println("Joining chat room \""+roomListing[0]+"\"...");
+						System.out.println("Informing directory server...");
+						String data[] = {"", cmd.substring(11)};
+						sendToDirectory("JOINED", data, cmd.substring(11));
+						consoleState = cmd.substring(11);
+						joinChatServer(roomListing[1], Integer.parseInt(roomListing[2]));
+						
+					}
+				}
+				System.out.println("No room by that name!");
+				
 			}
 		} else if(cmd.contains("/quit")) {
 			System.out.println("Quitting!");
@@ -154,11 +161,17 @@ class Client {
 	public static void showAvailableChatrooms(String s) {
 		System.out.println("--- AVAILABLE CHATROOMS ---");
 		for(String line : s.split(CRLF)) {
-			if(line.matches(".*: .*")) {
+			if(line.matches("Client: .*")) {
 				String[] chatPair = line.split(": ");
 				String[] roomDetails = chatPair[1].split(" ");
 				String roomName = roomDetails[0].substring(9);
-				System.out.println(roomName);
+				String hostAddr = roomDetails[1].substring(6);
+				String portNum = roomDetails[2].substring(5);
+				
+				String[] listing = { roomName, hostAddr, portNum };
+				rooms.add(listing);
+
+				System.out.println(listing[0] + "  " + listing[1] + " " + listing[2]);
 			}
 		}
 	}
