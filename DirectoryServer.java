@@ -159,6 +159,7 @@ public class DirectoryServer {
 		serverSocket.receive(receivePacket);
 		String request = new String(receivePacket.getData()).trim();
 		System.out.println("Raw Request: " + request);
+		System.out.println("len: " + request.length());
 		//serverSocket.close();
 		//TODO send ACK here (or RDT) <<< OR DO IT IN HANDLER's sendToClient() >>
 		
