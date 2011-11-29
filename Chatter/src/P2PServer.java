@@ -26,7 +26,7 @@ public class P2PServer extends Thread {
 				P2PClientConnection connection = new P2PClientConnection(this, socket);
 				clients.add(connection);
 				connection.start();
-				connection.write("Welcome!");
+				connection.write("Welcome! Type /exit to leave.");
 			} catch (IOException e) {
 				System.err.println("Error creating socket with peer.");
 				e.printStackTrace();
@@ -43,6 +43,22 @@ public class P2PServer extends Thread {
 				e.printStackTrace();
 			}
 		}
+	}
+
+	public void endAllConnections() throws IOException {
+		for (P2PClientConnection receivingSocket : clients) {
+				receivingSocket.write("Chatroom is closing.");
+				endConnectionWith(receivingSocket);
+		}
+	}
+
+	public void endConnectionWith(P2PClientConnection p2pClientConnection) throws IOException {
+		p2pClientConnection.stop();
+		p2pClientConnection.end();
+	}
+
+	public void end() throws IOException {
+		serverSocket.close();
 	}
 
 }

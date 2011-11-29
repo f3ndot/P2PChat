@@ -34,11 +34,18 @@ class P2PClientConnection extends Thread {
 				parentServer.writeToAllClients("Chatroom: Somebody has joined us.");
 				while (true) {
 					String readLine = socketReader.readLine();
+					if (readLine.equals("/END-SESSION")) {
+						parentServer.endConnectionWith(this);
+					}
 					parentServer.writeToAllClients(readLine);
 				}
 				
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+
+		public void end() throws IOException {
+			socket.close();
 		}
 	}

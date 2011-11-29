@@ -21,6 +21,7 @@ class Client {
 	public static String lastCommand = new String();
 	public static String consoleState = "console";
 	private static BufferedReader inFromUser;
+	private static P2PServer p2pServer;
 
 	public static void main(String args[]) throws Exception {
 
@@ -72,12 +73,13 @@ class Client {
 			sendToDirectory("QUERY", null, null);
 		} else if(cmd.contains("/go-online")) {
 			System.out.println("Informing directory server...");
-			runChatServer();
 			String data[] = {"5", "bob"}; //TODO this should be nulls if needed and directory needs to handle it
 			sendToDirectory("ONLINE", data, username);
+			runChatServer();
 		} else if(cmd.contains("/go-offline")) {
 			System.out.println("Informing directory server...");
 			sendToDirectory("OFFLINE", null, null);
+			endChatServer();
 		} else if(cmd.contains("/leave-room")) {
 			if(consoleState.equals("console")) {
 				System.out.println("You're not in a room!");
@@ -103,7 +105,6 @@ class Client {
 			System.out.println("You need to join a room before chatting!");
 		}
 	}
-
 
 	public static void sendToDirectory(String method, String[] headers, String data) {
 		try {
@@ -169,8 +170,14 @@ class Client {
 
 	public static void runChatServer() throws IOException {
 		int port2 = 6789;
-		P2PServer p2pServer = new P2PServer(port2);
+		p2pServer = new P2PServer(port2);
 		p2pServer.start();
+	}
+	
+	private static void endChatServer() throws IOException {
+		p2pServer.stop();
+		p2pServer.endAllConnections();
+		p2pServer.end();
 	}
 	
 	public static void joinChatServer() throws IOException {
@@ -184,9 +191,14 @@ class Client {
 		PrintWriter socketWriter = new PrintWriter(socket.getOutputStream(),true);
 		while (true) {
 			String line = inFromUser.readLine();
+			if (line.equals("/exit")) {
+				break;
+			}
 			socketWriter.println(line);
 		}
-		
+		socketWriter.println("/END-SESSION");
+		receiverPrinter.stop();
+		socket.close();
 	}
 	
 	static class ReceivedMessagePrinter extends Thread {
