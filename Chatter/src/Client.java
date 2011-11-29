@@ -85,7 +85,6 @@ class Client {
 				System.out.println("You're not in a room!");
 			} else {
 				System.out.println("Leaving chat room \""+cmd.substring(12)+"\"...");
-				//TODO initiate P2P connection (if true set console state and room state)
 				System.out.println("Informing directory server...");
 				sendToDirectory("PARTED", null, cmd.substring(12));
 			}
@@ -94,8 +93,8 @@ class Client {
 				System.out.println("Please specify a chat room to join");
 			} else {
 				System.out.println("Joining chat room \""+cmd.substring(11)+"\"...");
-				joinChatServer();
-				//TODO initiate P2P connection (if true set console state and room state)
+				//FIXME get these two values from Directory
+				joinChatServer("localhost", port);
 				System.out.println("Informing directory server...");
 				sendToDirectory("JOINED", null, cmd.substring(11));
 			}
@@ -166,8 +165,7 @@ class Client {
 	}
 
 	public static void runChatServer() throws IOException {
-		int port2 = 6789;
-		p2pServer = new P2PServer(port2);
+		p2pServer = new P2PServer(port);
 		p2pServer.start();
 	}
 	
@@ -177,10 +175,8 @@ class Client {
 		p2pServer.end();
 	}
 	
-	public static void joinChatServer() throws IOException {
-		String address = "localhost";
-		int port = 6789;
-		Socket socket = new Socket(address, port);
+	public static void joinChatServer(String someHost, int somePort) throws IOException {
+		Socket socket = new Socket(someHost, somePort);
 		
 		ReceivedMessagePrinter receiverPrinter = new ReceivedMessagePrinter(socket);
 		receiverPrinter.start();
@@ -191,7 +187,7 @@ class Client {
 			if (line.equals("/exit")) {
 				break;
 			}
-			socketWriter.println(line);
+			socketWriter.println(username +": "+ line);
 		}
 		socketWriter.println("/END-SESSION");
 		receiverPrinter.stop();
