@@ -7,10 +7,6 @@ import java.lang.StringBuilder;
 
 class Client {
 
-	public static final int MTU = 68; // 96 minus IPv4 and UDP overhead
-	public static final int TIMEOUT = 5000; // milliseconds
-	public static final int MAX_TRIES = 3; // until quit
-
 	public static final String DIRECTORY_ADDR = "localhost";
 	public static final int DIRECTORY_PORT = 55555;
 	public static final String PROTOCOL_VERSION = "BOKCHAT/1.0";
@@ -22,15 +18,9 @@ class Client {
 	public static String host = new String();
 	public static String lastCommand = new String();
 	public static String consoleState = "console";
-	public static int timeoutTry = 0;
-	public static int sequenceNumber;
 
 	public static void main(String args[]) throws Exception {
-
-		sequenceNumber = new Random().nextInt(8999) + 1000;
-
 		System.out.println("Chat client initiated! Prompting for client info...");
-		System.out.println("SequenceNumber starting at "+sequenceNumber);
 
 		BufferedReader inFromUser =
 				new BufferedReader(new InputStreamReader(System.in));
@@ -148,18 +138,7 @@ class Client {
 		System.out.println("DEBUG: Sending Request: "+s);
 
 		RDTSender sendToDirectory = new RDTSender(s, DIRECTORY_ADDR, DIRECTORY_PORT);
-		sendToDirectory.sendRequest();
-		
-	}
-
-	public static String receiveFromDirectory(DatagramSocket clientSocket) throws SocketTimeoutException, IOException {
-		byte[] receiveData = new byte[MTU];
-		DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-		clientSocket.receive(receivePacket);
-		String response = new String(receivePacket.getData()).trim();
-		System.out.println("Raw Response: " + response);
-		//clientSocket.close();
-		return response;
+		sendToDirectory.sendRequest();	
 	}
 
 }

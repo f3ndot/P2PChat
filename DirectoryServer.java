@@ -5,26 +5,14 @@ import java.util.Random;
 
 public class DirectoryServer {
 
-	public static final int MTU = 68; // 96 minus IPv4 and UDP overhead
-	public static final int TIMEOUT = 5000; // milliseconds
-	public static final int MAX_TRIES = 3; // until quit
-
 	public static final String DIRECTORY_ADDR = "localhost";
 	public static final int DIRECTORY_PORT = 55555;
 	public static final String PROTOCOL_VERSION = "BOKCHAT/1.0";
 	public static final String CRLF = "\r\n";
-	//public static int timeoutTry = 0;
-	//public static int sequenceNumber;
 
 	static DirectoryClientList directory = null;
-	static DatagramSocket serverSocket = null;
-
-	// really dirty, I know
-	static int clientPort = -1;
-	static InetAddress clientHost = null;
 
 	public DirectoryServer() throws IOException {
-		//sequenceNumber = new Random().nextInt(8999) + 1000;
 		directory = new DirectoryClientList();
 
 		RDTReceiver receiveFromClient = new RDTReceiver(DIRECTORY_PORT);
@@ -128,8 +116,6 @@ public class DirectoryServer {
 			statusPhrase = "Not Implemented";
 			break;
 		}
-
-		byte[] sendData = new byte[MTU];
 
 		StringBuilder sb = new StringBuilder();
 		String s = new String();
