@@ -193,37 +193,6 @@ public class DirectoryServer {
 		socket.send(packet);
 		sequenceNumber++;
 
-		
-		// NOTE TODO 4 chars = seqnum
-
-		
-		/*int directorySeqNum = -1;
-		String incomingData = new String();
-		if(timeoutTry < MAX_TRIES) {
-			try {
-				socket.send(packet);
-				if(!(incomingData = receiveFromClient(socket)).isEmpty()) {
-					directorySeqNum = extractSequenceNumber(incomingData);
-					if(isACK(incomingData)) {
-						System.out.println("ITS AN ACK");
-					} else {
-						System.out.println("NOT AN ACK");
-						String ack = directorySeqNum+"ACK";
-						rdtDispatch(ack, socket);
-					}
-				}
-			} catch(SocketTimeoutException e) {
-				System.out.println("Timeout waiting for client! Trying again ("+timeoutTry+")");
-				timeoutTry++;
-				rdtDispatch(s, socket);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}		
-			timeoutTry = 0;
-			sequenceNumber++;
-		} else {
-			System.err.println("Maximum number of tries reached. Stopping communication with client...");
-		}*/
 	}
 
 	public static int extractSequenceNumber(String data) {

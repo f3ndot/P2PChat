@@ -193,7 +193,12 @@ class Client {
 				if(!(incomingData = receiveFromDirectory(socket)).isEmpty()) {
 					directorySeqNum = extractSequenceNumber(incomingData);
 					if(isACK(incomingData)) {
-						System.out.println("ITS AN ACK.. ACKING SeqNum: "+getAckedSequenceNumber(incomingData));
+						System.out.println("ITS AN ACK FOR SeqNum: "+getAckedSequenceNumber(incomingData));
+						if(getAckedSequenceNumber(incomingData) != sequenceNumber) {
+							System.err.println("OUT OF ORDER PROBLEM!");
+							timeoutTry++;
+							rdtDispatch(s, socket);
+						}
 					} else {
 						System.out.println("NOT AN ACK");
 						String ack = sequenceNumber+"ACK"+directorySeqNum;
