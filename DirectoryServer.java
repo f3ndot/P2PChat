@@ -26,7 +26,6 @@ public class DirectoryServer {
 	}
 
 	public static void handleIncomingData(String s, InetAddress host, int port) {
-
 		System.out.println("DEBUG: Received request from "+host.getHostAddress()+":"+port+", "+s);
 		
 		// add it to an ArrayList for easy accessing, searching, etc.
@@ -52,7 +51,6 @@ public class DirectoryServer {
 		String method = requestLineMembers[0];
 		String[] hostAndPort = requestLineMembers[1].split(":"); 
 		String version = requestLineMembers[2].trim();
-
 
 		// TODO Add ACK sequence check here?
 		if(!version.equals(PROTOCOL_VERSION)) {
