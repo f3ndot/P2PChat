@@ -43,6 +43,14 @@ public class RDTPacket {
 		this.ackFlag = "1";
 	}
 
+	public RDTPacket(String ackFlag, String conFlag, String sequenceNumber, String ackedSeqNum, String payload) {
+		this.payload = payload;
+		this.sequenceNumber = sequenceNumber;
+		this.ackedSeqNum = ackedSeqNum;
+		this.conFlag = conFlag;
+		this.ackFlag = ackFlag;
+	}
+	
 	public String toString() {
 		String s = ackFlag + conFlag + sequenceNumber + ackedSeqNum + payload;
 		return s;

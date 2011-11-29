@@ -26,33 +26,46 @@ public class RDTSender {
 		this.destPort = destPort;
 	}
 	
-	public void sendMessage() {			
+	public void sendMessage() {
+		openSocket();
 		for (RDTPacket packet : message.getPackets()) {
 			try {
-				DatagramPacket p = new DatagramPacket(packet.toString().getBytes(), packet.toString().getBytes().length, InetAddress.getByName(destHostname), destPort);
-				socket.send(p);
+				DatagramPacket request = new DatagramPacket(packet.toString().getBytes(), packet.toString().getBytes().length, InetAddress.getByName(destHostname), destPort);				
+				socket.send(request);
+				RDTPacket response = receiveResponse();
+				System.out.println(response.toString());
 			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}		
 	}
 	
-	public void openSocket() {
+	public RDTPacket receiveResponse() {
+		byte[] data = new byte[RDTPacket.MTU];
+		DatagramPacket response = new DatagramPacket(data, data.length);
+		try {
+			socket.receive(response);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		RawDatagramExtractor pktInfo = new RawDatagramExtractor(response);
+		return new RDTPacket(pktInfo.extractAckFlag(), pktInfo.extractConFlag(), pktInfo.extractSequenceNumber(), pktInfo.extractAckedSeqNum(), pktInfo.extractPayload());
+	}
+		
+	private void openSocket() {
 		try {
 			socket = new DatagramSocket();
 			socket.setSoTimeout(TIMEOUT);
 		} catch (SocketException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	public void closeSocket() {
+	private void closeSocket() {
 		socket.close();
 	}
+	
 	
 }

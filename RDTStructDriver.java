@@ -20,6 +20,7 @@ public class RDTStructDriver {
 		
 		sendToDirectory.sendMessage();
 		
+		
 	}
 
 }
