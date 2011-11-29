@@ -17,9 +17,13 @@ public class RDTReceiver {
 	
 	public RDTReceiver(int listenPort) {
 		this.listenPort = listenPort;
-		openSocket();
+		openSocket(true);
 	}
 
+	public RDTReceiver() {
+		openSocket(false);
+	}
+	
 	public RDTSegment receiveRequest() {
 		RDTSegment request = new RDTSegment("", 0);
 		
@@ -29,7 +33,7 @@ public class RDTReceiver {
 			request.packets.add(packet);
 			sendAck(packet.sequenceNumber, packet.senderHost, packet.senderPort);
 			if(packet.conFlag.equals("0")) {
-				done = true;
+				done = true;//TODO send response on 0 continue
 				request.senderHost = packet.senderHost;
 				request.senderPort = packet.senderPort;
 			}
@@ -64,16 +68,20 @@ public class RDTReceiver {
 		}
 	}
 	
-	private void openSocket() {
+	private void openSocket(boolean listenOnPort) {
 		try {
-			socket = new DatagramSocket(listenPort);
+			if(listenOnPort) {
+				socket = new DatagramSocket(listenPort);
+			} else {
+				socket = new DatagramSocket();
+			}
 		} catch (SocketException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 	
-	private void closeSocket() { // Should only be called when shutting down Directory Server?
+	public void closeSocket() { // Should only be called when shutting down Directory Server?
 		socket.close();
 	}
 	

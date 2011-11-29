@@ -26,7 +26,7 @@ public class RDTSender {
 		this.destPort = destPort;
 	}
 	
-	public void sendRequest() {
+	public boolean sendRequest() {
 		openSocket();
 		for (RDTPacket packet : message.getPackets()) {
 			try {
@@ -43,7 +43,8 @@ public class RDTSender {
 			}
 		}
 		// TODO add ACK count or checking
-		closeSocket();
+		//closeSocket();
+		return true;
 	}
 	
 	// TODO borrow from RDTReceiver to complete this
@@ -68,7 +69,7 @@ public class RDTSender {
 		}
 	}
 
-	private void closeSocket() {
+	public void closeSocket() {
 		socket.close();
 	}
 	

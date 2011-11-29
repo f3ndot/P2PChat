@@ -11,11 +11,12 @@ public class DirectoryServer {
 	public static final String CRLF = "\r\n";
 
 	static DirectoryClientList directory = null;
-
+	static RDTReceiver receiveFromClient;
+	
 	public DirectoryServer() throws IOException {
 		directory = new DirectoryClientList();
 
-		RDTReceiver receiveFromClient = new RDTReceiver(DIRECTORY_PORT);
+		receiveFromClient = new RDTReceiver(DIRECTORY_PORT);
 
 		System.out.println("Directory server started, waiting...");
 
@@ -130,9 +131,15 @@ public class DirectoryServer {
 		}
 
 		System.out.println("DEBUG: Would send response: "+s);
+		System.out.println("DEBUG: Trying to send to: "+clientAddress.getHostAddress()+":"+clientPort);
+		DatagramPacket p = new DatagramPacket(s.getBytes(), s.getBytes().length, clientAddress, clientPort);
+		try {
+			receiveFromClient.socket.send(p);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-		//rdtDispatch(s, serverSocket, clientSeqNum);
-		// close socket?
 	}
 
 }

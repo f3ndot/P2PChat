@@ -27,15 +27,15 @@ class Client {
 		inFromUser = new BufferedReader(new InputStreamReader(System.in));
 
 
-//		 System.out.print("Username: ");
-//		 username = inFromUser.readLine();
-//		
-//		 System.out.print("Client Port: ");
-//		 port = Integer.parseInt(inFromUser.readLine());
-//		
-//		 System.out.print("Client IP: ");
-//		 ipaddr = InetAddress.getByName(inFromUser.readLine());
-//		 host = ipaddr.getCanonicalHostName();
+		//		 System.out.print("Username: ");
+		//		 username = inFromUser.readLine();
+		//		
+		//		 System.out.print("Client Port: ");
+		//		 port = Integer.parseInt(inFromUser.readLine());
+		//		
+		//		 System.out.print("Client IP: ");
+		//		 ipaddr = InetAddress.getByName(inFromUser.readLine());
+		//		 host = ipaddr.getCanonicalHostName();
 
 		username = "Alice";
 		System.out.println("Username: "+username);
@@ -106,7 +106,7 @@ class Client {
 		}
 	}
 
-	public static void sendToDirectory(String method, String[] headers, String data) {
+	public static void sendToDirectory(String method, String[] headers, String data) throws IOException {
 		String s = new String();
 
 		if(data == null) {
@@ -140,7 +140,17 @@ class Client {
 		System.out.println("DEBUG: Sending Request: "+s);
 
 		RDTSender sendToDirectory = new RDTSender(s, DIRECTORY_ADDR, DIRECTORY_PORT);
-		sendToDirectory.sendRequest();	
+
+		sendToDirectory.sendRequest();
+		
+		byte[] receiveData = new byte[1024];
+		DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+		sendToDirectory.socket.receive(receivePacket);
+		sendToDirectory.closeSocket();
+		String sentence = new String(receivePacket.getData()).trim();
+		System.out.println("DEBUG: Received Response: " + sentence);
+		
+
 
 	}
 
@@ -148,19 +158,19 @@ class Client {
 		p2pServer = new P2PServer(port);
 		p2pServer.start();
 	}
-	
+
 	private static void endChatServer() throws IOException {
 		p2pServer.stop();
 		p2pServer.endAllConnections();
 		p2pServer.end();
 	}
-	
+
 	public static void joinChatServer(String someHost, int somePort) throws IOException {
 		Socket socket = new Socket(someHost, somePort);
-		
+
 		ReceivedMessagePrinter receiverPrinter = new ReceivedMessagePrinter(socket);
 		receiverPrinter.start();
-		
+
 		PrintWriter socketWriter = new PrintWriter(socket.getOutputStream(),true);
 		while (true) {
 			String line = inFromUser.readLine();
@@ -173,9 +183,9 @@ class Client {
 		receiverPrinter.stop();
 		socket.close();
 	}
-	
+
 	static class ReceivedMessagePrinter extends Thread {
-		
+
 		private BufferedReader socketReader;
 		private Socket socket;
 
@@ -183,7 +193,7 @@ class Client {
 			this.socket = socket;
 			this.socketReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 		}
-		
+
 		@Override
 		public void run() {
 			while (true) {
