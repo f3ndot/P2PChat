@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.regex.Pattern;
 import java.lang.String;
@@ -20,6 +21,8 @@ class Client {
 	public static String consoleState = "console";
 	private static BufferedReader inFromUser;
 	private static P2PServer p2pServer;
+	
+	public static ArrayList<String> rooms = new ArrayList<String>();
 	
 	public static void main(String args[]) throws Exception {
 		System.out.println("Chat client initiated! Prompting for client info...");
@@ -143,11 +146,23 @@ class Client {
 		sendToDirectory.closeSocket();
 		String sentence = new String(receivePacket.getData()).trim();
 		System.out.println("DEBUG: Received Response: " + sentence);
+		showAvailableChatrooms(sentence);
 		
-
 
 	}
 
+	public static void showAvailableChatrooms(String s) {
+		System.out.println("--- AVAILABLE CHATROOMS ---");
+		for(String line : s.split(CRLF)) {
+			if(line.matches(".*: .*")) {
+				String[] chatPair = line.split(": ");
+				String[] roomDetails = chatPair[1].split(" ");
+				String roomName = roomDetails[0].substring(9);
+				System.out.println(roomName);
+			}
+		}
+	}
+	
 	public static void runChatServer() throws IOException {
 		p2pServer = new P2PServer(port);
 		p2pServer.start();
@@ -169,7 +184,8 @@ class Client {
 		while (true) {
 			String line = inFromUser.readLine();
 			if (line.equals("/exit")) {
-				sendToDirectory("PARTED", null, consoleState); //FIXME
+				sendToDirectory("PARTED", null, consoleState);
+				consoleState = "console";
 				break;
 			}
 			socketWriter.println(username +": "+ line);
