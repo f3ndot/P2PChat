@@ -1,3 +1,4 @@
+import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +8,9 @@ public class RDTSegment {
 	public String payload = new String();
 	public int sequenceNumberBase;
 	public List<RDTPacket> packets = new ArrayList<RDTPacket>();
+	
+	public InetAddress senderHost;
+	public int senderPort;
 	
 	public RDTSegment(String payload, int sequenceNumberBase) {
 		this.payload = payload; 

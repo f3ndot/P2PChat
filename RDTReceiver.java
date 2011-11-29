@@ -30,6 +30,8 @@ public class RDTReceiver {
 			sendAck(packet.sequenceNumber, packet.senderHost, packet.senderPort);
 			if(packet.conFlag.equals("0")) {
 				done = true;
+				request.senderHost = packet.senderHost;
+				request.senderPort = packet.senderPort;
 			}
 		}
 		return request;
