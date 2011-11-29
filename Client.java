@@ -10,7 +10,7 @@ class Client {
 	public static final int MTU = 68; // 96 minus IPv4 and UDP overhead
 	public static final int TIMEOUT = 5000; // milliseconds
 	public static final int MAX_TRIES = 3; // until quit
-	
+
 	public static final String DIRECTORY_ADDR = "localhost";
 	public static final int DIRECTORY_PORT = 55555;
 	public static final String PROTOCOL_VERSION = "BOKCHAT/1.0";
@@ -24,11 +24,11 @@ class Client {
 	public static String consoleState = "console";
 	public static int timeoutTry = 0;
 	public static int sequenceNumber;
-	
+
 	public static void main(String args[]) throws Exception {
 
 		sequenceNumber = new Random().nextInt(8999) + 1000;
-		
+
 		System.out.println("Chat client initiated! Prompting for client info...");
 		System.out.println("SequenceNumber starting at "+sequenceNumber);
 
@@ -106,8 +106,8 @@ class Client {
 		} else if(cmd.contains("/quit")) {
 			System.out.println("Quitting!");
 		} else if(cmd.contains("/test-rdt")) {
-			System.out.println("Sending a payload > 68 bytes to directory server...");
-			sendToDirectory("RDTCHECK", null, "AAAAAAAAAAAAAAAAAAABBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
+			System.out.println("Sending a payload > 58 bytes to directory server...");
+			sendToDirectory("RDTCHECK", null, "AAAAAAAAAAAAAAAAAAABBBBBBBBBBCCCCCCCCCCCCCCCCCCCCCCCCCCCC");
 		} else {
 			System.out.println("You need to join a room before chatting!");
 		}
@@ -115,51 +115,41 @@ class Client {
 
 
 	public static void sendToDirectory(String method, String[] headers, String data) {
-		try {
-			
+		String s = new String();
 
-			String s = new String();
-
-			if(data == null) {
-				data = "";
-			} else {
-				data = CRLF + CRLF + data;
-			}
-
-			if(headers == null) {
-				s = method + " " + host + ":" + port + " " + PROTOCOL_VERSION +
-
-						data;
-			} else {
-
-				String rating = "";
-				String chatroom = "";
-
-				if(headers[0] != null)
-					rating = "rating: " + headers[0];
-				if(headers[1] != null)
-					chatroom = "chatroom: " + headers[1];
-
-				s = method + " " + host + ":" + port + " " + PROTOCOL_VERSION + CRLF +
-						rating + CRLF +
-						chatroom +
-
-						data;
-			}
-
-			// annoyingly verbose
-			//System.out.println("Sending Request: "+s);
-			
-			DatagramSocket clientSocket = new DatagramSocket();
-
-			clientSocket.setSoTimeout(TIMEOUT);
-						
-			rdtDispatch(s, clientSocket);
-			clientSocket.close();
-		} catch (IOException e) {
-			e.printStackTrace();	
+		if(data == null) {
+			data = "";
+		} else {
+			data = CRLF + CRLF + data;
 		}
 
+		if(headers == null) {
+			s = method + " " + host + ":" + port + " " + PROTOCOL_VERSION +
+
+					data;
+		} else {
+
+			String rating = "";
+			String chatroom = "";
+
+			if(headers[0] != null)
+				rating = "rating: " + headers[0];
+			if(headers[1] != null)
+				chatroom = "chatroom: " + headers[1];
+
+			s = method + " " + host + ":" + port + " " + PROTOCOL_VERSION + CRLF +
+					rating + CRLF +
+					chatroom +
+
+					data;
+		}
+
+		// annoyingly verbose
+		System.out.println("DEBUG: Sending Request: "+s);
+
+		RDTSender sendToDirectory = new RDTSender(s, DIRECTORY_ADDR, DIRECTORY_PORT);
+		sendToDirectory.sendRequest();
+		
 	}
 
 	public static String receiveFromDirectory(DatagramSocket clientSocket) throws SocketTimeoutException, IOException {
@@ -172,118 +162,4 @@ class Client {
 		return response;
 	}
 
-	public static void rdtDispatch(String s, DatagramSocket socket) throws UnknownHostException {
-		
-		byte[] sendData = new byte[MTU];
-		
-		
-		String outString = new String();
-		while(s.length() > 64) {
-			System.out.println("Alert: TOO BIG! Fragmenting segment...");
-			
-			String fragment = s.substring(0,64);
-			outString = Integer.toString(sequenceNumber++) + fragment;
-		
-			sendData = outString.getBytes();//Append SeqNum		
-			DatagramPacket packet = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(DIRECTORY_ADDR), DIRECTORY_PORT);
-
-			
-			
-			int directorySeqNum = -1;
-			String incomingData = new String();
-			if(timeoutTry < MAX_TRIES) {
-				try {
-					socket.send(packet);
-					if(!(incomingData = receiveFromDirectory(socket)).isEmpty()) {
-						directorySeqNum = extractSequenceNumber(incomingData);
-						if(isACK(incomingData)) {
-							System.out.println("ITS AN ACK FOR SeqNum: "+getAckedSequenceNumber(incomingData));
-							if(getAckedSequenceNumber(incomingData) != sequenceNumber) {
-								System.err.println("OUT OF ORDER PROBLEM!");
-								timeoutTry++;
-								rdtDispatch(s, socket);
-							}
-						} else {
-							System.out.println("NOT AN ACK");
-							String ack = sequenceNumber+"ACK"+directorySeqNum;
-							rdtDispatch(ack, socket);
-						}
-					}
-				} catch(SocketTimeoutException e) {
-					System.out.println("Timeout waiting for directory! Trying again ("+timeoutTry+")");
-					timeoutTry++;
-					rdtDispatch(s, socket);
-				} catch (IOException e) {
-					e.printStackTrace();
-				}		
-				timeoutTry = 0;
-				sequenceNumber++;
-			} else {
-				System.err.println("Maximum number of tries reached. Reverting back to console...");
-			}
-			
-			s = s.substring(64);
-		}
-		outString = Integer.toString(sequenceNumber++) + s;
-		System.out.println(outString);
-		
-		
-		//System.out.println("Sending Raw Request: "+outString+"\n---");
-		
-		
-		System.exit(0);
-		
-		sendData = outString.getBytes();//Append SeqNum		
-		DatagramPacket packet = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(DIRECTORY_ADDR), DIRECTORY_PORT);
-
-		
-		
-		int directorySeqNum = -1;
-		String incomingData = new String();
-		if(timeoutTry < MAX_TRIES) {
-			try {
-				socket.send(packet);
-				if(!(incomingData = receiveFromDirectory(socket)).isEmpty()) {
-					directorySeqNum = extractSequenceNumber(incomingData);
-					if(isACK(incomingData)) {
-						System.out.println("ITS AN ACK FOR SeqNum: "+getAckedSequenceNumber(incomingData));
-						if(getAckedSequenceNumber(incomingData) != sequenceNumber) {
-							System.err.println("OUT OF ORDER PROBLEM!");
-							timeoutTry++;
-							rdtDispatch(s, socket);
-						}
-					} else {
-						System.out.println("NOT AN ACK");
-						String ack = sequenceNumber+"ACK"+directorySeqNum;
-						rdtDispatch(ack, socket);
-					}
-				}
-			} catch(SocketTimeoutException e) {
-				System.out.println("Timeout waiting for directory! Trying again ("+timeoutTry+")");
-				timeoutTry++;
-				rdtDispatch(s, socket);
-			} catch (IOException e) {
-				e.printStackTrace();
-			}		
-			timeoutTry = 0;
-			sequenceNumber++;
-		} else {
-			System.err.println("Maximum number of tries reached. Reverting back to console...");
-		}
-	}
-
-	public static int extractSequenceNumber(String data) {
-		return Integer.parseInt(data.substring(0,4));
-	}
-
-	public static boolean isACK(String data) {
-		return data.substring(4,7).equals("ACK");
-	}
-	
-	public static int getAckedSequenceNumber(String data) {
-		return Integer.parseInt(data.substring(7,11));		
-	}
-	
-	//public string addSequenct
-	
 }

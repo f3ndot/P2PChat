@@ -41,7 +41,9 @@ public class RDTSender {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		}		
+		}
+		// TODO add ACK count or checking
+		closeSocket();
 	}
 	
 	// TODO borrow from RDTReceiver to complete this
