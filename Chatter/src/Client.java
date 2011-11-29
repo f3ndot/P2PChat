@@ -178,16 +178,11 @@ class Client {
 		int port = 6789;
 		Socket socket = new Socket(address, port);
 		
-//		BufferedReader socketReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-//		while(true) {
-//			System.out.println(socketReader.readLine());
-//		}
 		ReceivedMessagePrinter receiverPrinter = new ReceivedMessagePrinter(socket);
 		receiverPrinter.start();
 		
 		PrintWriter socketWriter = new PrintWriter(socket.getOutputStream(),true);
 		while (true) {
-			System.out.print("> ");
 			String line = inFromUser.readLine();
 			socketWriter.println(line);
 		}

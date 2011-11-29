@@ -31,7 +31,7 @@ class P2PClientConnection extends Thread {
 		public void run() {
 			try {
 				System.out.println("Somebody has joined your chatroom.");
-//				parentServer.writeToAllClients("Somebody has joined us.");
+				parentServer.writeToAllClients("Chatroom: Somebody has joined us.");
 				while (true) {
 					String readLine = socketReader.readLine();
 					parentServer.writeToAllClients(readLine);
