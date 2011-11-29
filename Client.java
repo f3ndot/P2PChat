@@ -1,5 +1,6 @@
 import java.io.*;
 import java.net.*;
+import java.util.Random;
 import java.lang.String;
 import java.lang.StringBuilder;
 
@@ -21,10 +22,14 @@ class Client {
 	public static String lastCommand = new String();
 	public static String consoleState = "console";
 	public static int timeoutTry = 0;
+	public static int sequenceNumber;
 	
 	public static void main(String args[]) throws Exception {
 
+		sequenceNumber = new Random().nextInt(8999) + 1000;
+		
 		System.out.println("Chat client initiated! Prompting for client info...");
+		System.out.println("SequenceNumber starting at "+sequenceNumber);
 
 		BufferedReader inFromUser =
 				new BufferedReader(new InputStreamReader(System.in));
@@ -136,16 +141,8 @@ class Client {
 
 	public static void sendToDirectory(String method, String[] headers, String data) {
 		try {
-			DatagramSocket clientSocket = new DatagramSocket();
-
-			clientSocket.setSoTimeout(TIMEOUT);
 			
-			System.out.println("SBF: "+clientSocket.getSendBufferSize());
-			System.out.println("SoT: "+clientSocket.getSoTimeout());
-			
-			InetAddress IPAddress = InetAddress.getByName(DIRECTORY_ADDR);
 
-			byte[] sendData = new byte[68];
 			String s = new String();
 
 			if(data == null) {
@@ -178,40 +175,75 @@ class Client {
 			// annoyingly verbose
 			//System.out.println("Sending Request: "+s);
 			
-			sendData = s.getBytes();
-			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, DIRECTORY_PORT);
-			rdtDispatch(clientSocket, sendPacket);
+			DatagramSocket clientSocket = new DatagramSocket();
+
+			clientSocket.setSoTimeout(TIMEOUT);
+			
+			System.out.println("SBF: "+clientSocket.getSendBufferSize());
+			System.out.println("SoT: "+clientSocket.getSoTimeout());
+			
+			rdtDispatch(s, clientSocket);
+			clientSocket.close();
 		} catch (IOException e) {
 			e.printStackTrace();	
 		}
 
 	}
 
-	public static void rdtDispatch(DatagramSocket socket, DatagramPacket packet) {
+	public static String receiveFromDirectory(DatagramSocket clientSocket) throws SocketTimeoutException, IOException {
+		byte[] receiveData = new byte[MTU];
+		DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+		clientSocket.receive(receivePacket);
+		String response = new String(receivePacket.getData()).trim();
+		System.out.println("Raw Response: " + response);
+		//clientSocket.close();
+		return response;
+	}
+
+	public static void rdtDispatch(String s, DatagramSocket socket) throws UnknownHostException {
+		
+		byte[] sendData = new byte[MTU];
+		
+		String outString = Integer.toString(sequenceNumber) + s;
+		
+		sendData = outString.getBytes();//Append SeqNum		
+		DatagramPacket packet = new DatagramPacket(sendData, sendData.length, InetAddress.getByName(DIRECTORY_ADDR), DIRECTORY_PORT);
+
+		// NOTE TODO 4 chars = seqnum
+
+		
+		int directorySeqNum = -1;
+		String incomingData = new String();
 		if(timeoutTry < MAX_TRIES) {
 			try {
 				socket.send(packet);
-				receiveFromDirectory(socket);
+				if(!(incomingData = receiveFromDirectory(socket)).isEmpty()) {
+					directorySeqNum = extractSequenceNumber(incomingData);
+					if(incomingData.contains(directorySeqNum+"ACK")) {
+						System.out.println("ITS AN ACK");
+					} else {
+						System.out.println("NOT AN ACK");
+						String ack = directorySeqNum+"ACK";
+						rdtDispatch(ack, socket);
+					}
+				}
 			} catch(SocketTimeoutException e) {
 				System.out.println("Timeout waiting for directory! Trying again ("+timeoutTry+")");
 				timeoutTry++;
-				rdtDispatch(socket, packet);
+				rdtDispatch(s, socket);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}		
 			timeoutTry = 0;
+			sequenceNumber++;
 		} else {
 			System.err.println("Maximum number of tries reached. Reverting back to console...");
 		}
 	}
 
-	public static void receiveFromDirectory(DatagramSocket clientSocket) throws SocketTimeoutException, IOException {
-		byte[] receiveData = new byte[MTU];
-		DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-		clientSocket.receive(receivePacket);
-		String response = new String(receivePacket.getData());
-		System.out.println("Raw Response: " + response);
-		clientSocket.close();
+	public static int extractSequenceNumber(String data) {
+		System.out.println(data.substring(0,4));
+		return Integer.parseInt(data.substring(0,4));
 	}
-
+	
 }
