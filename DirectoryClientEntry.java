@@ -17,7 +17,6 @@ public class DirectoryClientEntry {
 		try {
 			hostIP = InetAddress.getByName(hostIPStr);
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
