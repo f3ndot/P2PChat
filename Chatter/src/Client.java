@@ -1,9 +1,11 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 
 class Client {
 
@@ -18,15 +20,25 @@ class Client {
 	public static String host = new String();
 	public static String lastCommand = new String();
 	public static String consoleState = "console";
+	private static BufferedReader inFromUser;
 
 	public static void main(String args[]) throws Exception {
 
 		System.out.println("Chat client initiated! Prompting for client info...");
 
-		BufferedReader inFromUser =
-				new BufferedReader(new InputStreamReader(System.in));
+		inFromUser = new BufferedReader(new InputStreamReader(System.in));
 
-		//FIXME: Harcoded username. Balls.
+
+//		 System.out.print("Username: ");
+//		 username = inFromUser.readLine();
+//		
+//		 System.out.print("Client Port: ");
+//		 port = Integer.parseInt(inFromUser.readLine());
+//		
+//		 System.out.print("Client IP: ");
+//		 ipaddr = InetAddress.getByName(inFromUser.readLine());
+//		 host = ipaddr.getCanonicalHostName();
+
 		username = "Alice";
 		System.out.println("Username: "+username);
 
@@ -53,13 +65,14 @@ class Client {
 	}
 
 
-	public static void commandHandler(String cmd) {
+	public static void commandHandler(String cmd) throws IOException {
 		// switch(String) doesn't exist on JDK 6 (only 7)... Resorting to a series of ifelse statments
 		if(cmd.contains("/query-for-peers")) {
 			System.out.println("Querying directory server...");
 			sendToDirectory("QUERY", null, null);
 		} else if(cmd.contains("/go-online")) {
 			System.out.println("Informing directory server...");
+			runChatServer();
 			String data[] = {"5", "bob"}; //TODO this should be nulls if needed and directory needs to handle it
 			sendToDirectory("ONLINE", data, username);
 		} else if(cmd.contains("/go-offline")) {
@@ -79,6 +92,7 @@ class Client {
 				System.out.println("Please specify a chat room to join");
 			} else {
 				System.out.println("Joining chat room \""+cmd.substring(11)+"\"...");
+				joinChatServer();
 				//TODO initiate P2P connection (if true set console state and room state)
 				System.out.println("Informing directory server...");
 				sendToDirectory("JOINED", null, cmd.substring(11));
@@ -148,10 +162,57 @@ class Client {
 			String response = new String(receivePacket.getData()).trim();
 			System.out.println("Raw Response: " + response);
 			clientSocket.close();
-			System.out.println("Finished!");
 		} catch (IOException e) {
 			e.printStackTrace();	
 		}
 	}
 
+	public static void runChatServer() throws IOException {
+		int port2 = 6789;
+		P2PServer p2pServer = new P2PServer(port2);
+		p2pServer.start();
+	}
+	
+	public static void joinChatServer() throws IOException {
+		String address = "localhost";
+		int port = 6789;
+		Socket socket = new Socket(address, port);
+		
+//		BufferedReader socketReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+//		while(true) {
+//			System.out.println(socketReader.readLine());
+//		}
+		ReceivedMessagePrinter receiverPrinter = new ReceivedMessagePrinter(socket);
+		receiverPrinter.start();
+		
+		PrintWriter socketWriter = new PrintWriter(socket.getOutputStream(),true);
+		while (true) {
+			System.out.print("> ");
+			String line = inFromUser.readLine();
+			socketWriter.println(line);
+		}
+		
+	}
+	
+	static class ReceivedMessagePrinter extends Thread {
+		
+		private BufferedReader socketReader;
+		private Socket socket;
+
+		public ReceivedMessagePrinter(Socket socket) throws IOException {
+			this.socket = socket;
+			this.socketReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+		}
+		
+		@Override
+		public void run() {
+			while (true) {
+				try {
+					System.out.println(socketReader.readLine());
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
 }
