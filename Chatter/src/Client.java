@@ -141,9 +141,6 @@ class Client {
 						data;
 			}
 
-			// annoyingly verbose
-			//System.out.println("Sending Request: "+s);
-			
 			sendData = s.getBytes();
 			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, DIRECTORY_PORT);
 			clientSocket.send(sendPacket);
