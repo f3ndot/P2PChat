@@ -1,7 +1,7 @@
 import java.util.Random;
 
 
-public class RDTStructDriver {
+public class RDTSenderDriver {
 
 	public static int sequenceNumber = new Random().nextInt(8999) + 1000;
 	
@@ -17,9 +17,7 @@ public class RDTStructDriver {
 		String s = "RDTCHECK 127.0.0.1:44444 BOKCHAT/1.0\r\n\r\nAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBCCCCCCCCCC";
 
 		RDTSender sendToDirectory = new RDTSender(s, DIRECTORY_ADDR, DIRECTORY_PORT);
-		
-		sendToDirectory.sendMessage();
-		
+		sendToDirectory.sendRequest();
 		
 	}
 

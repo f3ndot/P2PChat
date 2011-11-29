@@ -26,7 +26,7 @@ public class RDTSender {
 		this.destPort = destPort;
 	}
 	
-	public void sendMessage() {
+	public void sendRequest() {
 		openSocket();
 		for (RDTPacket packet : message.getPackets()) {
 			try {
@@ -42,6 +42,7 @@ public class RDTSender {
 		}		
 	}
 	
+	// TODO borrow from RDTReceiver to complete this
 	public RDTPacket receiveResponse() {
 		byte[] data = new byte[RDTPacket.MTU];
 		DatagramPacket response = new DatagramPacket(data, data.length);
