@@ -21,24 +21,24 @@ class Client {
 	public static String consoleState = "console";
 	private static BufferedReader inFromUser;
 	private static P2PServer p2pServer;
-
+	
 	public static ArrayList<String[]> rooms = new ArrayList<String[]>();
-
+	
 	public static void main(String args[]) throws Exception {
 		System.out.println("Chat client initiated! Prompting for client info...");
 
 		inFromUser = new BufferedReader(new InputStreamReader(System.in));
 
 
-		System.out.print("Username: ");
-		username = inFromUser.readLine();
-
-		System.out.print("Client Port: ");
-		port = Integer.parseInt(inFromUser.readLine());
-
-		System.out.print("Client IP: ");
-		ipaddr = InetAddress.getByName(inFromUser.readLine());
-		host = ipaddr.getCanonicalHostName();
+		 System.out.print("Username: ");
+		 username = inFromUser.readLine();
+		
+		 System.out.print("Client Port: ");
+		 port = Integer.parseInt(inFromUser.readLine());
+		
+		 System.out.print("Client IP: ");
+		 ipaddr = InetAddress.getByName(inFromUser.readLine());
+		 host = ipaddr.getHostAddress();
 
 		System.out.println("--- COMMAND MENU ---");
 		System.out.println(" 1. /query-for-peers");
@@ -75,7 +75,7 @@ class Client {
 			if(cmd.length() < 11) {
 				System.out.println("Please specify a chat room to join");
 			} else {
-
+				
 				for (String[] roomListing : rooms) {
 					if(roomListing[0].equals(cmd.substring(11))) {
 						System.out.println("Joining chat room \""+roomListing[0]+"\"...");
@@ -84,11 +84,11 @@ class Client {
 						sendToDirectory("JOINED", data, cmd.substring(11));
 						consoleState = cmd.substring(11);
 						joinChatServer(roomListing[1], Integer.parseInt(roomListing[2]));
-
+						
 					}
 				}
 				System.out.println("No room by that name!");
-
+				
 			}
 		} else if(cmd.contains("/quit")) {
 			System.out.println("Quitting!");
@@ -136,7 +136,7 @@ class Client {
 		RDTSender sendToDirectory = new RDTSender(s, DIRECTORY_ADDR, DIRECTORY_PORT);
 
 		sendToDirectory.sendRequest();
-
+		
 		byte[] receiveData = new byte[1024];
 		DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
 		sendToDirectory.socket.receive(receivePacket);
@@ -144,7 +144,7 @@ class Client {
 		String sentence = new String(receivePacket.getData()).trim();
 		System.out.println("DEBUG: Received Response: " + sentence);
 		showAvailableChatrooms(sentence);
-
+		
 
 	}
 
@@ -157,7 +157,7 @@ class Client {
 				String roomName = roomDetails[0].substring(9);
 				String hostAddr = roomDetails[1].substring(6);
 				String portNum = roomDetails[2].substring(5);
-
+				
 				String[] listing = { roomName, hostAddr, portNum };
 				rooms.add(listing);
 
@@ -165,7 +165,7 @@ class Client {
 			}
 		}
 	}
-
+	
 	public static void runChatServer() throws IOException {
 		p2pServer = new P2PServer(port);
 		p2pServer.start();
